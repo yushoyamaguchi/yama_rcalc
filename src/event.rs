@@ -8,6 +8,8 @@ use std::io::Write;
 use std::time::Duration;
 use tracing::debug;
 
+use crate::calc::Calc;
+
 pub struct SmashState {
     columns: usize,
     lines: usize,
@@ -45,6 +47,10 @@ impl UserInput {
 
     pub fn nth(&self, index: usize) -> Option<char> {
         self.input.chars().nth(index)
+    }
+
+    pub fn as_str(&self) -> &str {
+        self.input.as_str()
     }
 
     pub fn is_empty(&self) -> bool {
@@ -162,7 +168,7 @@ impl Drop for SmashState {
 }
 
 impl SmashState {
-    pub fn new() -> Self {
+    pub fn new(calc: Calc) -> Self {
         Self {
             columns: 0,
             lines: 0,
@@ -171,6 +177,13 @@ impl SmashState {
             clear_above: 0,
             clear_below: 0,
         }
+    }
+
+    fn run_calc(&mut self){
+        execute!(std::io::stdout(), Print("\r\n")).ok();
+        self::Calc.run_expr(self.input.as_str());
+        self.input.clear();
+        self.render_prompt();
     }
 
     pub fn render_prompt(&mut self) {
@@ -287,9 +300,7 @@ impl SmashState {
                 self.input.backspace();
             }
             (KeyCode::Enter, KeyModifiers::NONE) => {
-                execute!(std::io::stdout(), Print("\r\n")).ok();
-                self.input.clear();
-                self.render_prompt();
+                self.run_calc();
             }
             (KeyCode::Esc, KeyModifiers::NONE) => {
                 disable_raw_mode().ok();
@@ -347,7 +358,8 @@ mod tests {
     use crossterm::event::KeyModifiers;
 
     fn create_smash_state() -> SmashState {
-        SmashState::new()
+        let calc=Calc::new();  
+        SmashState::new(calc)
     }
 
     macro_rules! key_event {
