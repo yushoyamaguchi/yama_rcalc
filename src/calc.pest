@@ -1,0 +1,4 @@
+digit = { '0'..'9' }
+ident = { (digit)+ }
+form = ident { ('+'|'-') (ident) }*
+
