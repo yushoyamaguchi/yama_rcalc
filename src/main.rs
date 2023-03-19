@@ -6,6 +6,7 @@ use calc::Calc;
 mod parser;
 mod event;
 mod calc;
+mod lexer;
 
 fn main() {
     tracing_subscriber::registry()
