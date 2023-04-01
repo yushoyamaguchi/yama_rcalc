@@ -1,6 +1,5 @@
 use crossterm::style::{Print};
 use crossterm::{execute};
-use std::io::Write;
 
 
 
@@ -57,12 +56,31 @@ impl Token{
     
 }
 
-pub fn lex(form1: &str) -> Result<Vec<Token>, LexError>{
+pub fn lex_number(input: &[u8],pos: usize) ->  usize{
+    let mut num= 0;
+    let mut current_pos=pos;
+    while current_pos<input.len(){
+        match input[current_pos]{
+            b'0'..=b'9' => num=num*10+(input[current_pos] - b'0'),
+            b => break,
+        };
+        current_pos+=1;
+    }
+    let num_str=num.to_string();
+    execute!(std::io::stdout(),Print(num_str), Print("\r\n")).ok();
+    return current_pos;
+}
+
+pub fn lex(form1: &str) -> Result<Vec<Annot<TokenKind>>, LexError>{
     let length=form1.len() as i32;
     let mut Tokens= Vec::new();
-    let mut pos=0;
+    let mut pos:usize=0;
+    let input=form1.as_bytes();
     while pos<form1.len(){
-        pos+=1;
+        match input[pos]{
+            b'0'..=b'9' => pos=lex_number(input,pos),
+            b => pos+=1,
+        };
     }
     execute!(std::io::stdout(),Print(form1), Print("\r\n")).ok();
     return Ok(Tokens);
