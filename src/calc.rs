@@ -17,7 +17,7 @@ impl Calc {
     }
 
     pub fn run_expr(&mut self, expr: &str)  {
-        let tokens=Lexer::lex(&expr);
+        let tokens=Lexer::lex(&Lexer::new(),&expr);
         //let len_str=length.to_string();
         //execute!(std::io::stdout(),Print(len_str), Print("\r\n")).ok();
     }

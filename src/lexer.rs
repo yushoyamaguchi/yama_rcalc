@@ -57,9 +57,14 @@ impl Token{
 }
 
 pub struct Lexer{
+    Tokens:Vec<Token>,
 }
 
 impl Lexer{
+    pub fn new()->Self{
+        Self { Tokens: Vec::new() }
+    }
+
     pub fn lex_number(input: &[u8],pos: usize) ->  usize{
         let mut num= 0;
         let mut current_pos=pos;
@@ -75,9 +80,8 @@ impl Lexer{
         return current_pos;
     }
     
-    pub fn lex(form1: &str) -> Result<Vec<Token>, LexError>{
+    pub fn lex(&self,form1: &str) {
         let length=form1.len() as i32;
-        let mut Tokens:Vec<Token>= Vec::new();
         let mut pos:usize=0;
         let input=form1.as_bytes();
         while pos<form1.len(){
@@ -87,6 +91,5 @@ impl Lexer{
             };
         }
         execute!(std::io::stdout(),Print(form1), Print("\r\n")).ok();
-        return Ok(Tokens);
     }
 }
