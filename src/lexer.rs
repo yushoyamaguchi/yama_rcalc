@@ -71,9 +71,9 @@ pub fn lex_number(input: &[u8],pos: usize) ->  usize{
     return current_pos;
 }
 
-pub fn lex(form1: &str) -> Result<Vec<Annot<TokenKind>>, LexError>{
+pub fn lex(form1: &str) -> Result<Vec<Token>, LexError>{
     let length=form1.len() as i32;
-    let mut Tokens= Vec::new();
+    let mut Tokens:Vec<Token>= Vec::new();
     let mut pos:usize=0;
     let input=form1.as_bytes();
     while pos<form1.len(){
