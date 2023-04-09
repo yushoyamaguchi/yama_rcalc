@@ -129,6 +129,7 @@ impl Lexer{
                 b'-' =>pos=Lexer::lex_minus(self, input, pos),
                 b'*' =>pos=Lexer::lex_astarisk(self, input, pos),
                 b'/' =>pos=Lexer::lex_slash(self, input, pos),
+                b' ' | b'\n' | b'\t' => pos+=1,
                 b => pos+=1,
             };
         }
