@@ -34,7 +34,7 @@ impl LexError{
     }
 }
 
-type Token=Annot<TokenKind>;
+pub type Token=Annot<TokenKind>;
 
 impl Token{
 
