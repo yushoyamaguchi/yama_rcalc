@@ -1,4 +1,6 @@
 
+use crossterm::{execute, style::Print};
+
 use crate::lexer::Lexer;
 
 
@@ -12,8 +14,8 @@ impl Calc {
     }
 
     pub fn run_expr(&mut self, expr: &str)  {
-        let tokens=Lexer::lex(&mut Lexer::new(),&expr);
-        //let len_str=length.to_string();
-        //execute!(std::io::stdout(),Print(len_str), Print("\r\n")).ok();
+        let mut lexer_obj=Lexer::new();
+        Lexer::lex(&mut lexer_obj,&expr);
+        execute!(std::io::stdout(),Print("len="),Print(lexer_obj.Tokens.len()), Print("\r\n")).ok();
     }
 }

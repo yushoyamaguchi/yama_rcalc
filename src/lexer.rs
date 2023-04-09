@@ -62,7 +62,7 @@ impl Token{
 }
 
 pub struct Lexer{
-    Tokens:Vec<Token>,
+    pub Tokens:Vec<Token>,
 }
 
 impl Lexer{
