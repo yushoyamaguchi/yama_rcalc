@@ -118,7 +118,7 @@ impl Lexer{
         return current_pos;
     }
     
-    pub fn lex(&mut self,form1: &str) {
+    pub fn lex(&mut self,form1: &str) -> Option<LexError> {
         let length=form1.len() as i32;
         let mut pos:usize=0;
         let input=form1.as_bytes();
@@ -130,9 +130,9 @@ impl Lexer{
                 b'*' =>pos=Lexer::lex_astarisk(self, input, pos),
                 b'/' =>pos=Lexer::lex_slash(self, input, pos),
                 b' ' | b'\n' | b'\t' => pos+=1,
-                b => pos+=1,
+                b => return Some(LexError::invalid_char(b as char)),
             };
         }
-        execute!(std::io::stdout(),Print(form1), Print("\r\n")).ok();
+        return None
     }
 }
