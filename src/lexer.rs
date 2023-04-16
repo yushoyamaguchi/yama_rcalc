@@ -9,7 +9,9 @@ pub enum TokenKind {
     Plus,
     Minus,
     Asterisk,
-    Slash
+    Slash,
+    Lparen,
+    Rparen
 }
 
 pub enum LexErrorKind{
@@ -57,6 +59,14 @@ impl Token{
 
     pub fn slash()-> Self{
         Self::new(TokenKind::Slash)
+    }
+
+    pub fn lparen()-> Self{
+        Self::new(TokenKind::Lparen)
+    }
+
+    pub fn rparen()-> Self{
+        Self::new(TokenKind::Rparen)
     }
     
 }
@@ -117,6 +127,22 @@ impl Lexer{
         execute!(std::io::stdout(),Print("slash"), Print("\r\n")).ok();
         return current_pos;
     }
+
+    pub fn lex_lparen(&mut self,input: &[u8],pos: usize) ->  usize{
+        let mut current_pos=pos;
+        current_pos+=1;
+        self.Tokens.push(Token::lparen());
+        execute!(std::io::stdout(),Print("lparen"), Print("\r\n")).ok();
+        return current_pos;
+    }
+
+    pub fn lex_rparen(&mut self,input: &[u8],pos: usize) ->  usize{
+        let mut current_pos=pos;
+        current_pos+=1;
+        self.Tokens.push(Token::rparen());
+        execute!(std::io::stdout(),Print("rparen"), Print("\r\n")).ok();
+        return current_pos;
+    }
     
     pub fn lex(&mut self,form1: &str) -> Option<LexError> {
         let length=form1.len() as i32;
@@ -129,6 +155,8 @@ impl Lexer{
                 b'-' =>pos=Lexer::lex_minus(self, input, pos),
                 b'*' =>pos=Lexer::lex_astarisk(self, input, pos),
                 b'/' =>pos=Lexer::lex_slash(self, input, pos),
+                b'(' =>pos=Lexer::lex_lparen(self, input, pos),
+                b')' =>pos=Lexer::lex_rparen(self, input, pos),
                 b' ' | b'\n' | b'\t' => pos+=1,
                 b => return Some(LexError::invalid_char(b as char)),
             };

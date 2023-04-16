@@ -16,6 +16,6 @@ impl Calc {
     pub fn run_expr(&mut self, expr: &str)  {
         let mut lexer_obj=Lexer::new();
         Lexer::lex(&mut lexer_obj,&expr);
-        execute!(std::io::stdout(),Print("len="),Print(lexer_obj.Tokens.len()), Print("\r\n")).ok();
+        execute!(std::io::stdout(),Print("num of Vec items="),Print(lexer_obj.Tokens.len()), Print("\r\n")).ok();
     }
 }
