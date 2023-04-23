@@ -19,7 +19,7 @@ pub enum LexErrorKind{
 }
 
 pub struct Annot<T> {
-    value: T,
+    pub value: T,
 }
 
 impl<T> Annot<T> {
