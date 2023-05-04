@@ -103,12 +103,14 @@ impl<'b> ParseError<'b> {
     }
 }
 
-fn parse_factor<'a>(tokens:&'a Vec<Token>,pos_param:usize,parent:& mut Term,parent_is_term:bool)->Result<usize,ParseError<'a>>{
+fn parse_factor<'a>(tokens:&'a Vec<Token>,pos_param:usize,parent:& mut Option<&mut Term>,parent_is_term:bool)->Result<usize,ParseError<'a>>{
     let mut pos=pos_param;
     match tokens[pos].value{
         TokenKind::Number(n) =>{
             let mut myself=Factor::new(n);
-            parent.left=Some(Box::new(myself));
+            if parent_is_term{
+                parent.as_mut().unwrap().left=Some(Box::new(myself));
+            }
             pos+=1;
             //pos=parse_term(tokens,pos,parent,true);
         }
@@ -129,10 +131,10 @@ fn parse_factor<'a>(tokens:&'a Vec<Token>,pos_param:usize,parent:& mut Term,pare
 }
 
 
-fn parse_term(tokens:&Vec<Token>,pos:usize,parent_expr:&mut Option<&mut Expr>,parent_is_expr:bool)->usize{
+fn parse_term(tokens:&Vec<Token>,pos:usize,parent_expr:&mut Option<&mut Expr>,parent_term:&mut Option<&mut Term>,parent_is_expr:bool)->usize{
     let mut pos=pos;
     let mut myself=Term::new(None,None,None);
-    let result=parse_factor(tokens,pos,&mut myself,true);
+    let result=parse_factor(tokens,pos,&mut Some(&mut myself),true);
     match result {
         Ok(p)=>{
             pos=p;
@@ -146,10 +148,10 @@ fn parse_term(tokens:&Vec<Token>,pos:usize,parent_expr:&mut Option<&mut Expr>,pa
     return pos;
 }
 
-fn parse_expr(tokens:&Vec<Token>,pos:usize,parent_factor_paren:&mut Option<&mut Factor>)->usize{
+fn parse_expr(tokens:&Vec<Token>,pos:usize,parent_factor_paren:&mut Option<&mut Factor>,parent_expr:&mut Option<&mut Expr>,parent_is_factor:bool)->usize{
     let mut pos=pos;
     let mut myself=Expr::new(None,None,None);
-    pos=parse_term(tokens,pos,& mut Some(&mut myself),true);
+    pos=parse_term(tokens,pos,& mut Some(&mut myself),&mut None,true);
 
     return pos+1;
 }
@@ -168,7 +170,7 @@ impl Parser{
 
     fn root_parse_expr(&mut self,tokens:&Vec<Token>,pos:usize)->usize{
         let mut pos=pos;
-        pos=parse_term(tokens,pos,&mut Some(&mut self.root_expr),true);
+        pos=parse_term(tokens,pos,&mut Some(&mut self.root_expr),&mut None,true);
     
         return pos;
     }
