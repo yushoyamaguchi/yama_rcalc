@@ -131,27 +131,62 @@ fn parse_factor<'a>(tokens:&'a Vec<Token>,pos_param:usize,parent:& mut Option<&m
 }
 
 
-fn parse_term(tokens:&Vec<Token>,pos:usize,parent_expr:&mut Option<&mut Expr>,parent_term:&mut Option<&mut Term>,parent_is_expr:bool)->usize{
-    let mut pos=pos;
+fn parse_term<'a>(tokens:&'a Vec<Token>,pos_param:usize,parent_expr:&'a mut Option<&mut Expr>,parent_term:&'a mut Option<&mut Term>,parent_is_expr:bool)->Result<usize,ParseError<'a>>{
+    let mut pos=pos_param;
     let mut myself=Term::new(None,None,None);
+    match parent_expr{
+        Some(p)=>{
+            p.left=Some(Box::new(myself));
+        }
+        None=>{}
+    }
+    match parent_term{
+        Some(p)=>{
+            p.right=Some(Box::new(myself));
+        }
+        None=>{}
+    }
     let result=parse_factor(tokens,pos,&mut Some(&mut myself),true);
     match result {
         Ok(p)=>{
             pos=p;
         }
         Err(e)=>{
-            //error
+            return Err(e);
+        }
+    }
+    if pos>=tokens.len(){
+        return Ok(pos);
+    }
+    match tokens[pos].value{
+        TokenKind::Asterisk =>{
+            myself.TermOp=Some(Annot::new(TermopKind::Mult));
+            pos+=1;
+            let result_right=parse_term(tokens, pos, &mut None, &mut Some(&mut myself), false);
+        }
+        TokenKind::Slash=>{
+            myself.TermOp=Some(Annot::new(TermopKind::Div));
+            pos+=1;
+        }
+        TokenKind::Plus | TokenKind::Minus=>{
+
+        }
+        TokenKind::Rparen | TokenKind::Lparen =>{
+            return Err(ParseError::unexpected_token(& tokens[pos].value));
+        }
+        TokenKind::Number(n) =>{
+            return Err(ParseError::unexpected_token(& tokens[pos].value));
         }
     }
 
 
-    return pos;
+    return Ok(pos);
 }
 
-fn parse_expr(tokens:&Vec<Token>,pos:usize,parent_factor_paren:&mut Option<&mut Factor>,parent_expr:&mut Option<&mut Expr>,parent_is_factor:bool)->usize{
-    let mut pos=pos;
+fn parse_expr(tokens:&Vec<Token>,pos_param:usize,parent_factor_paren:&mut Option<&mut Factor>,parent_expr:&mut Option<&mut Expr>,parent_is_factor:bool)->usize{
+    let mut pos=pos_param;
     let mut myself=Expr::new(None,None,None);
-    pos=parse_term(tokens,pos,& mut Some(&mut myself),&mut None,true);
+    parse_term(tokens,pos,& mut Some(&mut myself),&mut None,true);
 
     return pos+1;
 }
@@ -168,9 +203,9 @@ impl Parser{
         }
     }
 
-    fn root_parse_expr(&mut self,tokens:&Vec<Token>,pos:usize)->usize{
-        let mut pos=pos;
-        pos=parse_term(tokens,pos,&mut Some(&mut self.root_expr),&mut None,true);
+    fn root_parse_expr(&mut self,tokens:&Vec<Token>,pos_param:usize)->usize{
+        let mut pos=pos_param;
+        parse_term(tokens,pos,&mut Some(&mut self.root_expr),&mut None,true);
     
         return pos;
     }
