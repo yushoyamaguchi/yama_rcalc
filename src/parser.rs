@@ -134,18 +134,6 @@ fn parse_factor<'a>(tokens:&'a Vec<Token>,pos_param:usize,parent:& mut Option<&m
 fn parse_term<'a>(tokens:&'a Vec<Token>,pos_param:usize,parent_expr:&'a mut Option<&mut Expr>,parent_term:&'a mut Option<&mut Term>,parent_is_expr:bool)->Result<usize,ParseError<'a>>{
     let mut pos=pos_param;
     let mut myself=Term::new(None,None,None);
-    match parent_expr{
-        Some(p)=>{
-            p.left=Some(Box::new(myself));
-        }
-        None=>{}
-    }
-    match parent_term{
-        Some(p)=>{
-            p.right=Some(Box::new(myself));
-        }
-        None=>{}
-    }
     let result=parse_factor(tokens,pos,&mut Some(&mut myself),true);
     match result {
         Ok(p)=>{
@@ -179,6 +167,12 @@ fn parse_term<'a>(tokens:&'a Vec<Token>,pos_param:usize,parent_expr:&'a mut Opti
         }
     }
 
+    if(parent_is_expr){
+        parent_expr.as_mut().unwrap().left=Some(Box::new(myself));
+    }
+    else{
+        parent_term.as_mut().unwrap().right=Some(Box::new(myself));
+    }
 
     return Ok(pos);
 }
