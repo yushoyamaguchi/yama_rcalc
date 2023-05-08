@@ -184,7 +184,13 @@ fn parse_term<'a>(tokens:&'a Vec<Token>,pos_param:usize,parent_expr:&'a mut Opti
             }
         }
         TokenKind::Plus | TokenKind::Minus=>{
-
+            if parent_is_expr {
+                parent_expr.as_mut().unwrap().left=Some(Box::new(myself));
+            }
+            else{
+                parent_term.as_mut().unwrap().right=Some(Box::new(myself));
+            }
+            return Ok(pos);
         }
         TokenKind::Rparen | TokenKind::Lparen =>{
             return Err(ParseError::unexpected_token(1));
@@ -204,12 +210,72 @@ fn parse_term<'a>(tokens:&'a Vec<Token>,pos_param:usize,parent_expr:&'a mut Opti
     return Ok(pos);
 }
 
-fn parse_expr(tokens:&Vec<Token>,pos_param:usize,parent_factor_paren:&mut Option<&mut Factor>,parent_expr:&mut Option<&mut Expr>,parent_is_factor:bool)->usize{
+fn parse_expr(tokens:&Vec<Token>,pos_param:usize,parent_factor_paren:&mut Option<&mut Factor>,parent_expr:&mut Option<&mut Expr>,parent_is_factor:bool)->Result<usize,ParseError>{
     let mut pos=pos_param;
     let mut myself=Expr::new(None,None,None);
-    parse_term(tokens,pos,& mut Some(&mut myself),&mut None,true);
-
-    return pos+1;
+    let result=parse_term(tokens,pos,& mut Some(&mut myself),&mut None,true);
+    match result {
+        Ok(p)=>{
+            pos=p;
+        }
+        Err(e)=>{
+            return Err(e);
+        } 
+    }
+    if pos>=tokens.len(){
+        if parent_is_factor==false {
+            parent_expr.as_mut().unwrap().right=Some(Box::new(myself));
+        }
+        return Ok(pos);
+    }
+    match tokens[pos].value{
+        TokenKind::Plus =>{
+            myself.ExprOp=Some(Annot::new(ExpropKind::Add));
+            pos+=1;
+            let mut none_factor_paren:Option<&mut Factor>=Option::None;
+            let mut myself_option=Option::Some(&mut myself);
+            let result_right=parse_expr(tokens, pos, &mut none_factor_paren, &mut myself_option, false);
+            match result_right {
+                Ok(p)=>{
+                    pos=p;
+                }
+                Err(e)=>{
+                    return Err(e);
+                } 
+            }
+        }
+        TokenKind::Minus=>{
+            myself.ExprOp=Some(Annot::new(ExpropKind::Sub));
+            pos+=1;
+            let mut none_factor_paren:Option<&mut Factor>=Option::None;
+            let mut myself_option=Option::Some(&mut myself);
+            let result_right=parse_expr(tokens, pos, &mut none_factor_paren, &mut myself_option, false);
+            match result_right {
+                Ok(p)=>{
+                    pos=p;
+                }
+                Err(e)=>{
+                    return Err(e);
+                } 
+            }
+        }
+        TokenKind::Rparen | TokenKind::Lparen =>{
+            if parent_is_factor==false {
+                parent_expr.as_mut().unwrap().right=Some(Box::new(myself));
+            }
+            return Ok(pos);
+        }
+        TokenKind::Number(n) =>{
+            return Err(ParseError::unexpected_token(1));
+        }
+        TokenKind::Asterisk | TokenKind::Slash =>{
+            return Err(ParseError::unexpected_token(1));
+        }
+    }
+    if parent_is_factor==false {
+        parent_expr.as_mut().unwrap().right=Some(Box::new(myself));
+    }
+    return Ok(pos);
 }
 
 
@@ -224,11 +290,61 @@ impl Parser{
         }
     }
 
-    fn root_parse_expr(&mut self,tokens:&Vec<Token>,pos_param:usize)->usize{
+    fn root_parse_expr(&mut self,tokens:&Vec<Token>,pos_param:usize)->Result<usize,ParseError>{
         let mut pos=pos_param;
-        parse_term(tokens,pos,&mut Some(&mut self.root_expr),&mut None,true);
+        let result=parse_term(tokens,pos,&mut Some(&mut self.root_expr),&mut None,true);
+        match result {
+            Ok(p)=>{
+                pos=p;
+            }
+            Err(e)=>{
+                return Err(e);
+            } 
+        }
+        if pos>=tokens.len(){
+            return Ok(pos);
+        }
+        match tokens[pos].value{
+            TokenKind::Plus =>{
+                self.root_expr.ExprOp=Some(Annot::new(ExpropKind::Add));
+                pos+=1;
+                let mut none_expr:Option<&mut Factor>=Option::None;
+                let mut myself_option=Option::Some(&mut self.root_expr);
+                let result_right=parse_expr(tokens, pos, &mut none_expr, &mut myself_option, false);
+                match result_right {
+                    Ok(p)=>{
+                        pos=p;
+                    }
+                    Err(e)=>{
+                        return Err(e);
+                    }
+                }
+            }
+            TokenKind::Minus=>{
+                self.root_expr.ExprOp=Some(Annot::new(ExpropKind::Sub));
+                pos+=1;
+                let mut none_expr:Option<&mut Factor>=Option::None;
+                let mut myself_option=Option::Some(&mut self.root_expr);
+                let result_right=parse_expr(tokens, pos, &mut none_expr, &mut myself_option, false);
+                match result_right {
+                    Ok(p)=>{
+                        pos=p;
+                    }
+                    Err(e)=>{
+                        return Err(e);
+                    }
+                }
+            }
+            TokenKind::Rparen | TokenKind::Lparen |TokenKind::Asterisk | TokenKind::Slash =>{
+                return Err(ParseError::unexpected_token(1));
+            }
+            TokenKind::Number(n) =>{
+                return Err(ParseError::unexpected_token(1));
+            }
+        }
+
     
-        return pos;
+        return Ok(pos);
     }
 
     pub fn parse(&mut self,tokens:&Vec<Token>) -> i32{
