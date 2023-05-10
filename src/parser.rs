@@ -5,7 +5,7 @@ use crate::lexer::{Token, TokenKind};
 
 #[derive(Debug)]
 pub struct Annot<T> {
-    value: T,
+    pub value: T,
 }
 
 impl<T> Annot<T> {
@@ -347,11 +347,18 @@ impl Parser{
         return Ok(pos);
     }
 
-    pub fn parse(&mut self,tokens:&Vec<Token>) -> i32{
+    pub fn parse(&mut self,tokens:&Vec<Token>) -> Option<ParseError>{
         execute!(std::io::stdout(),Print("num of Vec items="),Print(tokens.len()), Print("\r\n")).ok();
         //parse_expr(tokens,0);
-        self.root_parse_expr(tokens,0);
-        return 0;
+        let result=self.root_parse_expr(tokens,0);
+        match result {
+            Ok(p)=>{
+                return None;
+            }
+            Err(e)=>{
+                return Some(e);
+            }
+        }
     }
 }
 

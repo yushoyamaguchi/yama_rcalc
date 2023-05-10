@@ -29,6 +29,19 @@ impl Calc {
             }
         }
         let mut parser_obj=Parser::new();
-        Parser::parse(&mut parser_obj,&lexer_obj.Tokens);
+        let parse_result=Parser::parse(&mut parser_obj,&lexer_obj.Tokens);
+        match parse_result{
+            Some(parse_error)=>{
+                match parse_error.value{
+                    crate::parser::ParseErrorKind::UnexpectedToken(token)=>{
+                        execute!(std::io::stdout(),Print("There was an error during parsing: "), Print(token), Print("\r\n")).ok();
+                        return;
+                    }
+                }
+            }
+            None=>{
+                execute!(std::io::stdout(),Print("Parsing was successful"), Print("\r\n")).ok();
+            }
+        }
     }
 }
