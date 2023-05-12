@@ -31,7 +31,7 @@ impl Calc {
         let mut parser_obj=Parser::new();
         let parse_result=Parser::parse(&mut parser_obj,&lexer_obj.Tokens);
         match parse_result{
-            Some(parse_error)=>{
+            Err(parse_error)=>{
                 match parse_error.value{
                     crate::parser::ParseErrorKind::UnexpectedToken(token)=>{
                         execute!(std::io::stdout(),Print("There was an error during parsing: "), Print(token), Print("\r\n")).ok();
@@ -39,8 +39,8 @@ impl Calc {
                     }
                 }
             }
-            None=>{
-                execute!(std::io::stdout(),Print("Parsing was successful"), Print("\r\n")).ok();
+            Ok(n)=>{
+                execute!(std::io::stdout(),Print("Parsing was successful : Ansewer="),Print(n), Print("\r\n")).ok();
             }
         }
     }

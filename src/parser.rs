@@ -54,7 +54,9 @@ impl Factor{
 struct Term{
     value:i32,
     left:Option<Box<Factor>>,
+    left_val:i32,
     right:Option<Box<Term>>,
+    right_val:i32,
     TermOp:Option<TermOpObj>,
     is_single:bool,
 }
@@ -64,7 +66,9 @@ impl Term{
         Term{
             value:0,
             left:left,
+            left_val:0,
             right:right,
+            right_val:0,
             TermOp:Op,
             is_single:true,
         }
@@ -74,7 +78,9 @@ impl Term{
 pub struct Expr{
     value:i32,
     left:Option<Box<Term>>,
+    left_val:i32,
     right:Option<Box<Expr>>,
+    right_val:i32,
     ExprOp:Option<ExprOpObj>,
     is_single:bool,
 }
@@ -84,7 +90,9 @@ impl Expr{
         Expr{
             value:0,
             left:left,
+            left_val:0,
             right:right,
+            right_val:0,
             ExprOp:Op,
             is_single:true,
         }
@@ -111,6 +119,7 @@ fn parse_factor<>(tokens:& Vec<Token>,pos_param:usize,parent:& mut Option<&mut T
             execute!(std::io::stdout(),Print("factor:num="), Print(n), Print("\r\n")).ok();
             if parent_is_term{
                 parent.as_mut().unwrap().left=Some(Box::new(myself));
+                parent.as_mut().unwrap().left_val=n;
             }
             pos+=1;
             //pos=parse_term(tokens,pos,parent,true);
@@ -134,6 +143,7 @@ fn parse_factor<>(tokens:& Vec<Token>,pos_param:usize,parent:& mut Option<&mut T
 
 fn parse_term<>(tokens:& Vec<Token>,pos_param:usize,parent_expr:& mut Option<&mut Expr>,parent_term:& mut Option<&mut Term>,parent_is_expr:bool)->Result<usize,ParseError>{
     let mut pos=pos_param;
+    let mut val_of_this=0;
     execute!(std::io::stdout(),Print("term"), Print("\r\n")).ok();
     let mut myself=Term::new(None,None,None);
     let result=parse_factor(tokens,pos,&mut Some(&mut myself),true);
@@ -146,11 +156,15 @@ fn parse_term<>(tokens:& Vec<Token>,pos_param:usize,parent_expr:& mut Option<&mu
         }
     }
     if pos>=tokens.len(){
+        myself.value=myself.left_val;
+        val_of_this=myself.value;
         if parent_is_expr {
             parent_expr.as_mut().unwrap().left=Some(Box::new(myself));
+            parent_expr.as_mut().unwrap().left_val=val_of_this;
         }
         else{
             parent_term.as_mut().unwrap().right=Some(Box::new(myself));
+            parent_expr.as_mut().unwrap().right_val=val_of_this;
         }
         return Ok(pos);
     }
@@ -170,6 +184,8 @@ fn parse_term<>(tokens:& Vec<Token>,pos_param:usize,parent_expr:& mut Option<&mu
                     return Err(e);
                 }
             }
+            myself.value=myself.left_val*myself.right_val;
+            val_of_this=myself.value;
         }
         TokenKind::Slash=>{
             myself.is_single=false;
@@ -186,13 +202,17 @@ fn parse_term<>(tokens:& Vec<Token>,pos_param:usize,parent_expr:& mut Option<&mu
                     return Err(e);
                 }
             }
+            myself.value=myself.left_val/myself.right_val;
+            val_of_this=myself.value;
         }
         TokenKind::Plus | TokenKind::Minus=>{
             if parent_is_expr {
                 parent_expr.as_mut().unwrap().left=Some(Box::new(myself));
+                parent_expr.as_mut().unwrap().left_val=val_of_this;
             }
             else{
                 parent_term.as_mut().unwrap().right=Some(Box::new(myself));
+                parent_expr.as_mut().unwrap().right_val=val_of_this;
             }
             return Ok(pos);
         }
@@ -216,6 +236,7 @@ fn parse_term<>(tokens:& Vec<Token>,pos_param:usize,parent_expr:& mut Option<&mu
 
 fn parse_expr(tokens:&Vec<Token>,pos_param:usize,parent_factor_paren:&mut Option<&mut Factor>,parent_expr:&mut Option<&mut Expr>,parent_is_factor:bool)->Result<usize,ParseError>{
     let mut pos=pos_param;
+    let mut val_of_this=0;
     execute!(std::io::stdout(),Print("expr"), Print("\r\n")).ok();
     let mut myself=Expr::new(None,None,None);
     let result=parse_term(tokens,pos,& mut Some(&mut myself),&mut None,true);
@@ -228,8 +249,11 @@ fn parse_expr(tokens:&Vec<Token>,pos_param:usize,parent_factor_paren:&mut Option
         } 
     }
     if pos>=tokens.len(){
+        myself.value=myself.left_val;
+        val_of_this=myself.value;
         if parent_is_factor==false {
             parent_expr.as_mut().unwrap().right=Some(Box::new(myself));
+            parent_expr.as_mut().unwrap().right_val=val_of_this;
         }
         return Ok(pos);
     }
@@ -249,6 +273,8 @@ fn parse_expr(tokens:&Vec<Token>,pos_param:usize,parent_factor_paren:&mut Option
                     return Err(e);
                 } 
             }
+            myself.value=myself.left_val+myself.right_val;
+            val_of_this=myself.value;
         }
         TokenKind::Minus=>{
             myself.is_single=false;
@@ -265,12 +291,11 @@ fn parse_expr(tokens:&Vec<Token>,pos_param:usize,parent_factor_paren:&mut Option
                     return Err(e);
                 } 
             }
+            myself.value=myself.left_val-myself.right_val;
+            val_of_this=myself.value;
         }
         TokenKind::Rparen | TokenKind::Lparen =>{
-            if parent_is_factor==false {
-                parent_expr.as_mut().unwrap().right=Some(Box::new(myself));
-            }
-            return Ok(pos);
+            return Err(ParseError::unexpected_token(1));
         }
         TokenKind::Number(n) =>{
             return Err(ParseError::unexpected_token(1));
@@ -281,6 +306,7 @@ fn parse_expr(tokens:&Vec<Token>,pos_param:usize,parent_factor_paren:&mut Option
     }
     if parent_is_factor==false {
         parent_expr.as_mut().unwrap().right=Some(Box::new(myself));
+        parent_expr.as_mut().unwrap().right_val=val_of_this;
     }
     return Ok(pos);
 }
@@ -297,8 +323,9 @@ impl Parser{
         }
     }
 
-    fn root_parse_expr(&mut self,tokens:&Vec<Token>,pos_param:usize)->Result<usize,ParseError>{
+    fn root_parse_expr(&mut self,tokens:&Vec<Token>,pos_param:usize)->Result<i32,ParseError>{
         let mut pos=pos_param;
+        let mut val_of_this=0;
         execute!(std::io::stdout(),Print("root expr"), Print("\r\n")).ok();
         let result=parse_term(tokens,pos,&mut Some(&mut self.root_expr),&mut None,true);
         match result {
@@ -310,7 +337,9 @@ impl Parser{
             } 
         }
         if pos>=tokens.len(){
-            return Ok(pos);
+            self.root_expr.value=self.root_expr.left_val;
+            val_of_this=self.root_expr.value;
+            return Ok(val_of_this);
         }
         match tokens[pos].value{
             TokenKind::Plus =>{
@@ -328,6 +357,8 @@ impl Parser{
                         return Err(e);
                     }
                 }
+                self.root_expr.value=self.root_expr.left_val+self.root_expr.right_val;
+                val_of_this=self.root_expr.value;
             }
             TokenKind::Minus=>{
                 self.root_expr.is_single=false;
@@ -344,6 +375,8 @@ impl Parser{
                         return Err(e);
                     }
                 }
+                self.root_expr.value=self.root_expr.left_val-self.root_expr.right_val;
+                val_of_this=self.root_expr.value;
             }
             TokenKind::Rparen | TokenKind::Lparen |TokenKind::Asterisk | TokenKind::Slash =>{
                 return Err(ParseError::unexpected_token(1));
@@ -354,19 +387,19 @@ impl Parser{
         }
 
     
-        return Ok(pos);
+        return Ok(val_of_this);
     }
 
-    pub fn parse(&mut self,tokens:&Vec<Token>) -> Option<ParseError>{
+    pub fn parse(&mut self,tokens:&Vec<Token>) -> Result<i32,ParseError>{
         execute!(std::io::stdout(),Print("num of Vec items="),Print(tokens.len()), Print("\r\n")).ok();
         //parse_expr(tokens,0);
         let result=self.root_parse_expr(tokens,0);
         match result {
-            Ok(p)=>{
-                return None;
+            Ok(n)=>{
+                return Ok(n);
             }
             Err(e)=>{
-                return Some(e);
+                return Err(e);
             }
         }
     }
