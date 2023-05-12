@@ -103,7 +103,7 @@ impl ParseError {
     }
 }
 
-fn parse_factor<'a>(tokens:&'a Vec<Token>,pos_param:usize,parent:& mut Option<&mut Term>,parent_is_term:bool)->Result<usize,ParseError>{
+fn parse_factor<>(tokens:& Vec<Token>,pos_param:usize,parent:& mut Option<&mut Term>,parent_is_term:bool)->Result<usize,ParseError>{
     let mut pos=pos_param;
     match tokens[pos].value{
         TokenKind::Number(n) =>{
@@ -132,7 +132,7 @@ fn parse_factor<'a>(tokens:&'a Vec<Token>,pos_param:usize,parent:& mut Option<&m
 }
 
 
-fn parse_term<'a>(tokens:&'a Vec<Token>,pos_param:usize,parent_expr:&'a mut Option<&mut Expr>,parent_term:&'a mut Option<&mut Term>,parent_is_expr:bool)->Result<usize,ParseError>{
+fn parse_term<>(tokens:& Vec<Token>,pos_param:usize,parent_expr:& mut Option<&mut Expr>,parent_term:& mut Option<&mut Term>,parent_is_expr:bool)->Result<usize,ParseError>{
     let mut pos=pos_param;
     execute!(std::io::stdout(),Print("term"), Print("\r\n")).ok();
     let mut myself=Term::new(None,None,None);
