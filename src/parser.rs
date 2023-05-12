@@ -108,6 +108,7 @@ fn parse_factor<'a>(tokens:&'a Vec<Token>,pos_param:usize,parent:& mut Option<&m
     match tokens[pos].value{
         TokenKind::Number(n) =>{
             let mut myself=Factor::new(n);
+            execute!(std::io::stdout(),Print("factor:num="), Print(n), Print("\r\n")).ok();
             if parent_is_term{
                 parent.as_mut().unwrap().left=Some(Box::new(myself));
             }
@@ -133,6 +134,7 @@ fn parse_factor<'a>(tokens:&'a Vec<Token>,pos_param:usize,parent:& mut Option<&m
 
 fn parse_term<'a>(tokens:&'a Vec<Token>,pos_param:usize,parent_expr:&'a mut Option<&mut Expr>,parent_term:&'a mut Option<&mut Term>,parent_is_expr:bool)->Result<usize,ParseError>{
     let mut pos=pos_param;
+    execute!(std::io::stdout(),Print("term"), Print("\r\n")).ok();
     let mut myself=Term::new(None,None,None);
     let result=parse_factor(tokens,pos,&mut Some(&mut myself),true);
     match result {
@@ -212,6 +214,7 @@ fn parse_term<'a>(tokens:&'a Vec<Token>,pos_param:usize,parent_expr:&'a mut Opti
 
 fn parse_expr(tokens:&Vec<Token>,pos_param:usize,parent_factor_paren:&mut Option<&mut Factor>,parent_expr:&mut Option<&mut Expr>,parent_is_factor:bool)->Result<usize,ParseError>{
     let mut pos=pos_param;
+    execute!(std::io::stdout(),Print("expr"), Print("\r\n")).ok();
     let mut myself=Expr::new(None,None,None);
     let result=parse_term(tokens,pos,& mut Some(&mut myself),&mut None,true);
     match result {
@@ -292,6 +295,7 @@ impl Parser{
 
     fn root_parse_expr(&mut self,tokens:&Vec<Token>,pos_param:usize)->Result<usize,ParseError>{
         let mut pos=pos_param;
+        execute!(std::io::stdout(),Print("root expr"), Print("\r\n")).ok();
         let result=parse_term(tokens,pos,&mut Some(&mut self.root_expr),&mut None,true);
         match result {
             Ok(p)=>{
