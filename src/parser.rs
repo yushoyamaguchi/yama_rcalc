@@ -156,6 +156,7 @@ fn parse_term<>(tokens:& Vec<Token>,pos_param:usize,parent_expr:& mut Option<&mu
     }
     match tokens[pos].value{
         TokenKind::Asterisk =>{
+            myself.is_single=false;
             myself.TermOp=Some(Annot::new(TermopKind::Mult));
             pos+=1;
             let mut none_expr:Option<&mut Expr>=Option::None;
@@ -171,6 +172,7 @@ fn parse_term<>(tokens:& Vec<Token>,pos_param:usize,parent_expr:& mut Option<&mu
             }
         }
         TokenKind::Slash=>{
+            myself.is_single=false;
             myself.TermOp=Some(Annot::new(TermopKind::Div));
             pos+=1;
             let mut none_expr:Option<&mut Expr>=Option::None;
@@ -233,6 +235,7 @@ fn parse_expr(tokens:&Vec<Token>,pos_param:usize,parent_factor_paren:&mut Option
     }
     match tokens[pos].value{
         TokenKind::Plus =>{
+            myself.is_single=false;
             myself.ExprOp=Some(Annot::new(ExpropKind::Add));
             pos+=1;
             let mut none_factor_paren:Option<&mut Factor>=Option::None;
@@ -248,6 +251,7 @@ fn parse_expr(tokens:&Vec<Token>,pos_param:usize,parent_factor_paren:&mut Option
             }
         }
         TokenKind::Minus=>{
+            myself.is_single=false;
             myself.ExprOp=Some(Annot::new(ExpropKind::Sub));
             pos+=1;
             let mut none_factor_paren:Option<&mut Factor>=Option::None;
@@ -310,6 +314,7 @@ impl Parser{
         }
         match tokens[pos].value{
             TokenKind::Plus =>{
+                self.root_expr.is_single=false;
                 self.root_expr.ExprOp=Some(Annot::new(ExpropKind::Add));
                 pos+=1;
                 let mut none_expr:Option<&mut Factor>=Option::None;
@@ -325,6 +330,7 @@ impl Parser{
                 }
             }
             TokenKind::Minus=>{
+                self.root_expr.is_single=false;
                 self.root_expr.ExprOp=Some(Annot::new(ExpropKind::Sub));
                 pos+=1;
                 let mut none_expr:Option<&mut Factor>=Option::None;
