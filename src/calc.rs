@@ -1,15 +1,27 @@
 use crossterm::{execute, style::Print};
 
-use crate::{lexer::Lexer, parser::Parser};
+use crate::{lexer::Lexer, parser::{Parser, Expr}};
+
+
 
 
 
 pub struct Calc;
 
+fn recur(expr:&mut Expr){
+    if(expr.get_is_single()==true){
+        return;
+    }
+}
 
 impl Calc {
     pub fn new() -> Self {
         Self
+    }
+
+    pub fn num_of_plus(parser: &mut Parser){
+        let root_expr:&mut Expr=&mut parser.root_expr;
+        recur(root_expr);
     }
 
     pub fn run_expr(&mut self, expr: &str)  {

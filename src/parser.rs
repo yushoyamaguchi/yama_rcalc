@@ -28,7 +28,7 @@ enum ExpropKind {
 
 type ExprOpObj=Annot<ExpropKind>;
 
-struct Factor{
+pub struct Factor{
     value:i32,
     is_num:bool,
     in_paren:Option<Box<Expr>>,
@@ -51,7 +51,7 @@ impl Factor{
     }
 }
 
-struct Term{
+pub struct Term{
     value:i32,
     left:Option<Box<Factor>>,
     left_val:i32,
@@ -96,6 +96,10 @@ impl Expr{
             ExprOp:Op,
             is_single:true,
         }
+    }
+
+    pub fn get_is_single(self)->bool{
+        self.is_single
     }
 }
 
