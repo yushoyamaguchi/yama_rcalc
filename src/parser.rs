@@ -144,9 +144,9 @@ fn parse_factor<>(tokens:& Vec<Token>,pos_param:usize,parent:& mut Option<&mut T
 fn parse_term<>(tokens:& Vec<Token>,pos_param:usize,parent_expr:& mut Option<&mut Expr>,parent_term:& mut Option<&mut Term>,parent_is_expr:bool)->Result<usize,ParseError>{
     let mut pos=pos_param;
     let mut val_of_this=0;
-    execute!(std::io::stdout(),Print("term"), Print("\r\n")).ok();
     let mut myself=Term::new(None,None,None);
     let result=parse_factor(tokens,pos,&mut Some(&mut myself),true);
+    val_of_this=myself.left_val;
     match result {
         Ok(p)=>{
             pos=p;
@@ -164,7 +164,7 @@ fn parse_term<>(tokens:& Vec<Token>,pos_param:usize,parent_expr:& mut Option<&mu
         }
         else{
             parent_term.as_mut().unwrap().right=Some(Box::new(myself));
-            parent_expr.as_mut().unwrap().right_val=val_of_this;
+            parent_term.as_mut().unwrap().right_val=val_of_this;
         }
         return Ok(pos);
     }
@@ -185,6 +185,7 @@ fn parse_term<>(tokens:& Vec<Token>,pos_param:usize,parent_expr:& mut Option<&mu
                 }
             }
             myself.value=myself.left_val*myself.right_val;
+            execute!(std::io::stdout(),Print("term:left="),Print(myself.left_val), Print("  right="),Print(myself.right_val),Print("\r\n")).ok();
             val_of_this=myself.value;
         }
         TokenKind::Slash=>{
@@ -212,7 +213,7 @@ fn parse_term<>(tokens:& Vec<Token>,pos_param:usize,parent_expr:& mut Option<&mu
             }
             else{
                 parent_term.as_mut().unwrap().right=Some(Box::new(myself));
-                parent_expr.as_mut().unwrap().right_val=val_of_this;
+                parent_term.as_mut().unwrap().right_val=val_of_this;
             }
             return Ok(pos);
         }
@@ -226,9 +227,11 @@ fn parse_term<>(tokens:& Vec<Token>,pos_param:usize,parent_expr:& mut Option<&mu
 
     if parent_is_expr {
         parent_expr.as_mut().unwrap().left=Some(Box::new(myself));
+        parent_expr.as_mut().unwrap().left_val=val_of_this;
     }
     else{
         parent_term.as_mut().unwrap().right=Some(Box::new(myself));
+        parent_term.as_mut().unwrap().right_val=val_of_this;
     }
 
     return Ok(pos);
@@ -240,6 +243,7 @@ fn parse_expr(tokens:&Vec<Token>,pos_param:usize,parent_factor_paren:&mut Option
     execute!(std::io::stdout(),Print("expr"), Print("\r\n")).ok();
     let mut myself=Expr::new(None,None,None);
     let result=parse_term(tokens,pos,& mut Some(&mut myself),&mut None,true);
+    val_of_this=myself.left_val;
     match result {
         Ok(p)=>{
             pos=p;
@@ -328,6 +332,7 @@ impl Parser{
         let mut val_of_this=0;
         execute!(std::io::stdout(),Print("root expr"), Print("\r\n")).ok();
         let result=parse_term(tokens,pos,&mut Some(&mut self.root_expr),&mut None,true);
+        val_of_this = self.root_expr.left_val;
         match result {
             Ok(p)=>{
                 pos=p;
@@ -338,6 +343,7 @@ impl Parser{
         }
         if pos>=tokens.len(){
             self.root_expr.value=self.root_expr.left_val;
+            execute!(std::io::stdout(),Print("root expr:val="),Print(self.root_expr.value), Print("\r\n")).ok();
             val_of_this=self.root_expr.value;
             return Ok(val_of_this);
         }
