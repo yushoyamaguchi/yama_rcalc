@@ -152,11 +152,11 @@ impl Lexer{
             match input[pos]{
                 b'0'..=b'9' => pos=Lexer::lex_number(self,input,pos),
                 b'+' =>pos=Lexer::lex_plus(self, input, pos),
-                b'-' =>pos=Lexer::lex_minus(self, input, pos),
+                //b'-' =>pos=Lexer::lex_minus(self, input, pos),
                 b'*' =>pos=Lexer::lex_astarisk(self, input, pos),
-                b'/' =>pos=Lexer::lex_slash(self, input, pos),
-                b'(' =>pos=Lexer::lex_lparen(self, input, pos),
-                b')' =>pos=Lexer::lex_rparen(self, input, pos),
+                //b'/' =>pos=Lexer::lex_slash(self, input, pos),
+                //b'(' =>pos=Lexer::lex_lparen(self, input, pos),
+                //b')' =>pos=Lexer::lex_rparen(self, input, pos),
                 b' ' | b'\n' | b'\t' => pos+=1,
                 b => return Some(LexError::invalid_char(b as char)),
             };
