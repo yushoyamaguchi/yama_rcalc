@@ -92,7 +92,7 @@ impl Lexer{
         }
         let num_str=num.to_string();
         self.Tokens.push(Token::number(num));
-        execute!(std::io::stdout(),Print(num_str), Print("\r\n")).ok();
+        //execute!(std::io::stdout(),Print(num_str), Print("\r\n")).ok();
         return current_pos;
     }
 
@@ -100,7 +100,7 @@ impl Lexer{
         let mut current_pos=pos;
         current_pos+=1;
         self.Tokens.push(Token::plus());
-        execute!(std::io::stdout(),Print("plus"), Print("\r\n")).ok();
+        //execute!(std::io::stdout(),Print("plus"), Print("\r\n")).ok();
         return current_pos;
     }
 
@@ -108,7 +108,7 @@ impl Lexer{
         let mut current_pos=pos;
         current_pos+=1;
         self.Tokens.push(Token::minus());
-        execute!(std::io::stdout(),Print("minus"), Print("\r\n")).ok();
+        //execute!(std::io::stdout(),Print("minus"), Print("\r\n")).ok();
         return current_pos;
     }
 
@@ -116,7 +116,7 @@ impl Lexer{
         let mut current_pos=pos;
         current_pos+=1;
         self.Tokens.push(Token::astarisk());
-        execute!(std::io::stdout(),Print("astarisk"), Print("\r\n")).ok();
+        //execute!(std::io::stdout(),Print("astarisk"), Print("\r\n")).ok();
         return current_pos;
     }
 
@@ -124,7 +124,7 @@ impl Lexer{
         let mut current_pos=pos;
         current_pos+=1;
         self.Tokens.push(Token::slash());
-        execute!(std::io::stdout(),Print("slash"), Print("\r\n")).ok();
+        //execute!(std::io::stdout(),Print("slash"), Print("\r\n")).ok();
         return current_pos;
     }
 
@@ -132,7 +132,7 @@ impl Lexer{
         let mut current_pos=pos;
         current_pos+=1;
         self.Tokens.push(Token::lparen());
-        execute!(std::io::stdout(),Print("lparen"), Print("\r\n")).ok();
+        //execute!(std::io::stdout(),Print("lparen"), Print("\r\n")).ok();
         return current_pos;
     }
 
@@ -140,7 +140,7 @@ impl Lexer{
         let mut current_pos=pos;
         current_pos+=1;
         self.Tokens.push(Token::rparen());
-        execute!(std::io::stdout(),Print("rparen"), Print("\r\n")).ok();
+        //execute!(std::io::stdout(),Print("rparen"), Print("\r\n")).ok();
         return current_pos;
     }
     

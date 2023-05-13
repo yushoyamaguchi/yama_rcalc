@@ -98,8 +98,12 @@ impl Expr{
         }
     }
 
-    pub fn get_is_single(self)->bool{
+    pub fn get_is_single(&mut self)->bool{
         self.is_single
+    }
+
+    pub fn get_right(&mut self)->&mut Option<Box<Expr>>{
+        &mut self.right
     }
 }
 

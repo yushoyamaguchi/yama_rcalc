@@ -1,3 +1,5 @@
+use core::num;
+
 use crossterm::{execute, style::Print};
 
 use crate::{lexer::Lexer, parser::{Parser, Expr}};
@@ -9,19 +11,29 @@ use crate::{lexer::Lexer, parser::{Parser, Expr}};
 pub struct Calc;
 
 fn recur(expr:&mut Expr){
-    if(expr.get_is_single()==true){
+    execute!(std::io::stdout(),Print("Plus found (This is for AST access check)"), Print("\r\n")).ok();
+    if expr.get_is_single()==false {
+        let right_expr_ptr=expr.get_right();
+        match right_expr_ptr{
+            Some(right_expr)=>{
+                recur(right_expr);
+            }
+            None=>{
+                return;
+            }
+        }
         return;
     }
+}
+
+pub fn num_of_plus(parser: &mut Parser){
+    let root_expr=&mut parser.root_expr;
+    recur(root_expr);
 }
 
 impl Calc {
     pub fn new() -> Self {
         Self
-    }
-
-    pub fn num_of_plus(parser: &mut Parser){
-        let root_expr:&mut Expr=&mut parser.root_expr;
-        recur(root_expr);
     }
 
     pub fn run_expr(&mut self, expr: &str)  {
@@ -55,5 +67,6 @@ impl Calc {
                 execute!(std::io::stdout(),Print("Parsing was successful : Ansewer="),Print(n), Print("\r\n")).ok();
             }
         }
+        num_of_plus(&mut parser_obj);
     }
 }
